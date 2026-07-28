@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Road Damage Detection — YOLOv8 Model Comparison</title>
+<meta name="description" content="Compare three YOLOv8 models for automated road damage detection.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <i class="fa-solid fa-road logo-icon"></i>
+      <span>RoadScan<span class="logo-accent">AI</span></span>
+    </div>
+
+    <div class="header-status">
+      <span class="status-pill" id="statusPill">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Connecting…</span>
+      </span>
+      <span class="selected-model-pill" id="selectedModelPill" hidden>
+        <i class="fa-solid fa-microchip"></i>
+        <span id="selectedModelName">—</span>
+      </span>
+    </div>
+  </div>
+</header>
+
+
+<section class="hero" id="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">YOLOv8 · Comparative Object Detection</p>
+    <h1 class="hero-title">Road Damage Detection</h1>
+    <p class="hero-subtitle">Compare three YOLOv8 models for automated road damage detection.</p>
+    <button class="btn btn-primary btn-large" id="getStartedBtn">
+      Get Started
+      <i class="fa-solid fa-arrow-down"></i>
+    </button>
+  </div>
+</section>
+
+<main class="page">
+
+  <section class="section" id="models-section">
+    <div class="section-heading">
+      <h2>Choose a model</h2>
+      <p>Each model trades off speed, size, and accuracy differently. Metrics below come directly from evaluation on the held-out validation set.</p>
+    </div>
+
+    <div class="model-grid" id="modelGrid">
+      <!-- populated by JS -->
+      <div class="model-card model-card-skeleton"></div>
+      <div class="model-card model-card-skeleton"></div>
+      <div class="model-card model-card-skeleton"></div>
+    </div>
+  </section>
+
+  <section class="section" id="upload-section">
+    <div class="section-heading">
+      <h2>Upload a road image</h2>
+      <p>Drag a photo in, or browse your files. JPG and PNG are supported.</p>
+    </div>
+
+    <div class="upload-panel glass-card">
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload road image">
+        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" hidden>
+        <div class="dropzone-content" id="dropzoneContent">
+          <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+          <p class="dropzone-text">Drop an image here, or <span class="link-text">browse</span></p>
+          <p class="dropzone-hint">JPG · PNG — up to 10MB</p>
+        </div>
+        <img id="previewImg" class="preview-img" alt="Upload preview" hidden>
+      </div>
+
+      <div class="upload-controls">
+        <div class="confidence-control">
+          <label for="confidenceSlider">Confidence threshold: <span id="confidenceValue">0.25</span></label>
+          <input type="range" id="confidenceSlider" min="0.05" max="0.95" step="0.05" value="0.25">
+        </div>
+
+        <div class="upload-actions">
+          <button class="btn btn-ghost" id="clearBtn" disabled>
+            <i class="fa-solid fa-xmark"></i> Clear
+          </button>
+          <button class="btn btn-primary btn-large" id="runBtn" disabled>
+            <i class="fa-solid fa-magnifying-glass"></i> Run Detection
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section loading-section" id="loadingSection" hidden>
+    <div class="loading-panel glass-card">
+      <div class="spinner"></div>
+      <p class="loading-text">Running YOLOv8<span class="loading-dots"></span></p>
+    </div>
+  </section>
+
+  <section class="section" id="resultsSection" hidden>
+    <div class="section-heading">
+      <h2>Results</h2>
+      <p>Original image on the left, model prediction on the right.</p>
+    </div>
+
+    <div class="results-images">
+      <div class="image-panel glass-card">
+        <p class="image-panel-label">Original</p>
+        <img id="originalImg" alt="Original upload">
+      </div>
+      <div class="image-panel glass-card">
+        <p class="image-panel-label">Prediction</p>
+        <img id="annotatedImg" alt="Annotated prediction">
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card glass-card">
+        <i class="fa-solid fa-microchip stat-icon"></i>
+        <p class="stat-value" id="statModel">—</p>
+        <p class="stat-label">Model</p>
+      </div>
+      <div class="stat-card glass-card">
+        <i class="fa-solid fa-stopwatch stat-icon"></i>
+        <p class="stat-value" id="statInferenceTime">—</p>
+        <p class="stat-label">Inference Time</p>
+      </div>
+      <div class="stat-card glass-card">
+        <i class="fa-solid fa-vector-square stat-icon"></i>
+        <p class="stat-value" id="statObjectCount">—</p>
+        <p class="stat-label">Objects Detected</p>
+      </div>
+      <div class="stat-card glass-card">
+        <i class="fa-solid fa-trophy stat-icon"></i>
+        <p class="stat-value" id="statTopDetection">—</p>
+        <p class="stat-label">Top Detection</p>
+      </div>
+    </div>
+
+    <div class="detections-panel glass-card">
+      <p class="detections-heading">Detections</p>
+      <div id="detectionsList" class="detections-list"></div>
+      <div id="noDetections" class="no-detections" hidden>
+        <i class="fa-solid fa-circle-check"></i>
+        <p>No road damages detected.</p>
+        <p class="no-detections-sub">No object exceeded the selected confidence threshold.</p>
+      </div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn btn-ghost" id="downloadBtn">
+        <i class="fa-solid fa-download"></i> Download Prediction
+      </button>
+      <button class="btn btn-primary" id="newPredictionBtn">
+        <i class="fa-solid fa-rotate-right"></i> New Prediction
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Powered by</p>
+  <div class="footer-badges">
+    <span class="footer-badge"><i class="fa-solid fa-flask"></i> Flask</span>
+    <span class="footer-badge"><i class="fa-solid fa-brain"></i> Ultralytics YOLOv8</span>
+    <span class="footer-badge"><i class="fa-solid fa-eye"></i> OpenCV</span>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
