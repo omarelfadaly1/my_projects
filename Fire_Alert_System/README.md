@@ -46,7 +46,8 @@ fire_alert_system/
 │   └── app.py                 
 ├── notebooks/
 │   ├── train.ipynb
-│   └── tracker.ipynb    
+│   └── tracker.ipynb 
+├── .gitignore   
 ├── models/ best.pt                 
 ├── main.py         
 └── data/ alerts.db
