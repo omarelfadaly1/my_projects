@@ -38,3 +38,6 @@ outputs/
 # OS files
 .DS_Store
 Thumbs.db
+
+notebooks/results/Prediction.svg
+notebooks/results/Random Sample.svg
