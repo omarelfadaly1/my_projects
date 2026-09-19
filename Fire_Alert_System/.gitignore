@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# Runtime alert data
+alerts/screenshots/*
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Input / generated videos
+input/*.mp4
+input/*.avi
+input/*.mov
+input/*.mkv
+output/
+outputs/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
